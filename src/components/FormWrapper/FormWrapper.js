@@ -57,6 +57,19 @@ const formWrapper = (props) => {
                     (props.singleLine || props.multiLine || props.multipleCompanies) && !props.generatingChart ?
                         <Aux key="dropdown-key">
                             {options}
+                        </Aux> :
+                        null
+                }
+            </QueueAnim>
+            <QueueAnim
+                className="fade-out-content-2"
+                key="fade-out-key-2"
+                type={['right', 'left']}
+                ease={['easeOutQuart', 'easeInOutQuart']}
+                duration={1000}>
+                {
+                    (props.singleLine || props.multiLine || props.multipleCompanies) && !props.generatingChart ?
+                        <Aux key="dropdown-key-2">
                             <Dropdowns
                                 companyChanged={props.companyChanged}
                                 timeSeriesChanged={props.timeSeriesChanged}
