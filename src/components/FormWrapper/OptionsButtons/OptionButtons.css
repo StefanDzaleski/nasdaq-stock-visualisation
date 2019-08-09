@@ -1,0 +1,10 @@
+.Option-buttons-wrapper {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.Button {
+    width: 250px;
+    margin-right: 20px;
+}

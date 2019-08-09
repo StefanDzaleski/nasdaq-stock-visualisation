@@ -4,12 +4,13 @@ import HighchartsReact from 'highcharts-react-official';
 
 class Chart extends Component{
 
-    shouldComponentUpdate(nextProps, nextState) {
-        if (JSON.stringify(nextProps.options) !== JSON.stringify(this.props.options)) {
-            return true;
-        }
-        return false;
-    }
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     if (nextProps.url !== this.props.url) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
+
     render() {
         return (
             <HighchartsReact

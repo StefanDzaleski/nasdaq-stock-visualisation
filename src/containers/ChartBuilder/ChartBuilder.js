@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
 import { chartOptions } from '../../components/Chart/ChartOptions';
 import * as Backend from './../../services/Backend';
-import { getSingleLine } from '../../services/ParseData';
 import Aux from '../../hoc/Aux/Aux';
-import Dropdowns from '../../components/UI/Dropdowns/Dropdowns';
 import Chart from './../../components/Chart/Chart';
-import { TimeSeriesEnum, TimeSeriesLabel } from '../../enums/TimeSeries';
 import './ChartBuilder.css';
 import { Button } from 'antd';
+import FormWrapper from '../../components/FormWrapper/FormWrapper';
+
+const lineOptions = [
+    { label: 'Open', value: '1. open' },
+    { label: 'High', value: '2. high' },
+    { label: 'Low', value: '3. low' },
+    { label: 'Close', value: '4. close' },
+    { label: 'Volume', value: '5. volume' }
+];
 
 class ChartBuilder extends Component {
     constructor(props) {
@@ -16,61 +22,106 @@ class ChartBuilder extends Component {
         this.state = {
             chartOptions: null,
             url: null,
+            singleCompany: false,
+            multipleCompanies: false,
+            singleLine: false,
+            multiLine: false,
             company: null,
+            companies: null,
             timeSeries: null,
-            interval: null
+            interval: null,
+            lineOption: null,
+            lineOptions: null,
+            generatingChart: false
         }
     }
 
     componentDidMount() {
     }
 
+    // shouldComponentUpdate(nextProps, nextState) {
+    // }
+
+    companyLineNumberHandler = (type) => {
+        this.setState({ [type]: true });
+    }
+
     companyChangedHandler = (value) => {
-        this.setState({ company: value })
+        this.setState({ company: value });
     }
 
     timeSeriesChangedHandler = (value) => {
-        this.setState({ timeSeries: value })
+        this.setState({ timeSeries: value });
     }
 
     intervalChangedHandler = (value) => {
-        this.setState({ interval: value })
+        this.setState({ interval: value });
+    }
+
+    lineOptionsChosen = (values) => {
+        console.log('values', values);
+        this.setState({
+            lineOptions: values
+        });
+    }
+
+    lineOptionChosen = (event) => {
+        this.setState({
+            lineOption: event.target.value
+        });
+    }
+
+    multipleComapniesChangedHandler = (values) => {
+        this.setState({
+            companies: values
+        });
     }
 
     generateChart = () => {
         console.log('state', this.state);
-        if (this.state.company === null || this.state.timeSeries === null) {
+        this.setState({
+            generatingChart: true
+        });
+        if ((this.state.company === null && this.state.companies === null) || this.state.timeSeries === null) {
             return;
         }
-        if (this.state.timeSeries !== TimeSeriesEnum.Intraday) {
-            Backend.getSeriesData(this.state.company, this.state.timeSeries).then(response => {
-                console.log('response', response);
-                let data = response.data['Time Series (' + TimeSeriesLabel[this.state.timeSeries]+ ')'];
-                console.log('data', data);
-                const url = response.config.url;
-                if (this.state.chartOptions === null || this.state.url !== url) {
-                getSingleLine(data, '1. open').then(response => {
-                    chartOptions.series[0].data = response;
-                        let newOptions = chartOptions;
-                        newOptions.series[0].data = response;
-                        this.setState({ chartOptions: newOptions, url: url });
-                    
+
+        if (this.state.singleCompany) {
+            Backend.getSingleCompanyData(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
+                .then(response => {
+                    let newOptions = { ...chartOptions };
+                    let series = [];
+                    for (let i = 0; i < response.length; i++) {
+                        let lineData =
+                        {
+                            name: 'Test series ' + i,
+                            data: response[i],
+                            tooltip: {
+                                valueDecimals: 2
+                            }
+                        }
+                        series.push(lineData);
+                    }
+                    newOptions.series = series;
+                    this.setState({ chartOptions: newOptions });
                 });
-            }
-            })
         } else {
-            Backend.getIntradayData(this.state.company, this.state.interval).then(response => {
-                let data = response.data['Time Series (' + this.state.interval + ')'];
-                const url = response.config.url;
-                if (this.state.chartOptions === null || this.state.url !== url) {
-                getSingleLine(data, '1. open').then(response => {
-                    chartOptions.series[0].data = response;
-                        let newOptions = chartOptions;
-                        newOptions.series[0].data = response;
-                        this.setState({ chartOptions: newOptions, url: url });
-                    
-                });
-            }
+            Backend.getMultiCompanyData(this.state.companies, this.state.interval, this.state.timeSeries, this.state.lineOption).then(response => {
+                let newOptions = { ...chartOptions };
+                let series = [];
+                for (let i = 0; i < response.length; i++) {
+                    let lineData =
+                    {
+                        name: 'Test series ' + i,
+                        data: response[i],
+                        tooltip: {
+                            valueDecimals: 2
+                        }
+                    }
+                    series.push(lineData);
+                }
+                newOptions.series = series;
+                this.setState({ chartOptions: newOptions });
             })
         }
     }
@@ -78,14 +129,29 @@ class ChartBuilder extends Component {
     render() {
         return (
             <Aux>
-                <Dropdowns
+                <FormWrapper
                     companyChanged={this.companyChangedHandler}
                     timeSeriesChanged={this.timeSeriesChangedHandler}
-                    intervalChanged={this.intervalChangedHandler} />
+                    intervalChanged={this.intervalChangedHandler}
+                    singleCompany={this.state.singleCompany}
+                    multipleCompanies={this.state.multipleCompanies}
+                    singleLine={this.state.singleLine}
+                    multiLine={this.state.multiLine}
+                    companyLineNumber={this.companyLineNumberHandler}
+                    timeSeries={this.state.timeSeries}
+                    lineOptions={lineOptions}
+                    lineOptionChosen={this.lineOptionChosen}
+                    lineOptionsChosen={this.lineOptionsChosen}
+                    multipleCompaniesChanged={this.multipleComapniesChangedHandler}
+                    generatingChart={this.state.generatingChart}
+                />
                 <div className="Generate-button-div">
                     <Button type="primary" onClick={this.generateChart}>Generate chart</Button>
                 </div>
-                <Chart options={this.state.chartOptions} />
+                <Chart
+                    options={this.state.chartOptions}
+                    url={this.state.url}
+                />
             </Aux>
         );
     }
