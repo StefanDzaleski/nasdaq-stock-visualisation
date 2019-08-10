@@ -1,0 +1,39 @@
+@import '../../../colors.scss';
+
+.Option-buttons-wrapper {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.Custom-button {
+    font-family: 'Teko', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    width: 250px;
+    height: 40px;
+    color: $ink;
+    text-align: center;
+    line-height: 35px;
+    background-color: transparent;
+    border: none;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    .Button-line {
+        width: 20px;
+        height: 2px;
+        background-color: $embers;
+        margin-left: auto;
+        margin-right: auto;
+        transition: all .3s ease-in-out;
+    }
+}
+
+.Custom-button:hover {
+    .Button-line {
+        width: 70px;
+    }
+}

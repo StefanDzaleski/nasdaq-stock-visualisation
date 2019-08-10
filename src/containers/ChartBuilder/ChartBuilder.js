@@ -3,8 +3,8 @@ import { chartOptions } from '../../components/Chart/ChartOptions';
 import * as Backend from './../../services/Backend';
 import Aux from '../../hoc/Aux/Aux';
 import Chart from './../../components/Chart/Chart';
-import './ChartBuilder.css';
-import { Button } from 'antd';
+import './ChartBuilder.scss';
+import QueueAnim from 'rc-queue-anim';
 import FormWrapper from '../../components/FormWrapper/FormWrapper';
 
 const lineOptions = [
@@ -77,6 +77,24 @@ class ChartBuilder extends Component {
         });
     }
 
+    resetForm = () => {
+        this.setState({
+            chartOptions: null,
+            url: null,
+            singleCompany: false,
+            multipleCompanies: false,
+            singleLine: false,
+            multiLine: false,
+            company: null,
+            companies: null,
+            timeSeries: null,
+            interval: null,
+            lineOption: null,
+            lineOptions: null,
+            generatingChart: false
+        });
+    }
+
     generateChart = () => {
         console.log('state', this.state);
         this.setState({
@@ -145,13 +163,35 @@ class ChartBuilder extends Component {
                     multipleCompaniesChanged={this.multipleComapniesChangedHandler}
                     generatingChart={this.state.generatingChart}
                 />
-                <div className="Generate-button-div">
-                    <Button type="primary" onClick={this.generateChart}>Generate chart</Button>
-                </div>
-                <Chart
-                    options={this.state.chartOptions}
-                    url={this.state.url}
-                />
+                <QueueAnim
+                    className="fade-out-content"
+                    key="fade-out-key"
+                    type={['right', 'left']}
+                    ease={['easeOutQuart', 'easeInOutQuart']}
+                    duration={1000}>
+                    {
+                        (this.state.company || this.state.companies) && this.state.timeSeries && (this.state.lineOption || this.state.lineOptions) ?
+                            <div className="Generate-button-div" key="button-key">
+                                <button className="Generate-button" onClick={this.generateChart}>Generate chart</button>
+                            </div> :
+                            null
+                    }
+                </QueueAnim>
+                {
+                    this.state.chartOptions ?
+                        <Aux>
+                            <div className="Chart-wrapper">
+                                <Chart
+                                    options={this.state.chartOptions}
+                                    url={this.state.url}
+                                />
+                            </div>
+                            <div className="Reset-button-wrapper">
+                                <button className="Reset-button" onClick={this.resetForm}>Reset form</button>
+                            </div>
+                        </Aux> :
+                        null
+                }
             </Aux>
         );
     }

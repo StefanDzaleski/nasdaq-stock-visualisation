@@ -1,0 +1,16 @@
+@import '../../../colors.scss';
+
+.Radio-buttons-wrapper {
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: 'Teko', sans-serif;
+}
+
+.ant-radio {
+    margin-bottom: 2px !important;
+}
+
+.ant-radio-wrapper {
+    font-size: 20px !important;
+    color: $ink !important;
+}

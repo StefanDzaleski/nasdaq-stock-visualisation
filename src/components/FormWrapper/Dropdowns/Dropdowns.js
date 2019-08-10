@@ -3,7 +3,7 @@ import { Select } from 'antd';
 import { CompanyList } from '../../../enums/CompanyList';
 import { TimeSeries, TimeSeriesEnum } from '../../../enums/TimeSeries';
 import { Interval } from '../../../enums/Interval';
-import './Dropdowns.css';
+import './Dropdowns.scss';
 
 const { Option } = Select;
 
@@ -15,7 +15,7 @@ const dropdowns = (props) => {
                     <Select className="Dropdown" mode="multiple" placeholder="Select a company" onChange={props.multipleCompaniesChanged} name="company">
                         {CompanyList.map(element => {
                             return (
-                                <Option key={element.value} value={element.value}>{element.label}</Option>
+                                <Option className="Option" key={element.value} value={element.value}>{element.label}</Option>
                             );
                         })}
                     </Select> :
@@ -38,7 +38,7 @@ const dropdowns = (props) => {
 
             {
                 props.timeSeries === TimeSeriesEnum.Intraday ?
-                    <Select className="Dropdown" placeholder="Select an interval" onChange={props.intervalChanged} name="interval">
+                    <Select className="Dropdown" defaultValue="1min" placeholder="Select an interval" onChange={props.intervalChanged} name="interval">
                         {Interval.map(element => {
                             return (
                                 <Option key={element.value} value={element.value}>{element.label}</Option>

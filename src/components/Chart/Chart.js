@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import './Chart.scss';
 
 class Chart extends Component{
 
@@ -11,7 +12,7 @@ class Chart extends Component{
     //     return false;
     // }
 
-    render() {
+    render() {    
         return (
             <HighchartsReact
             highcharts={Highcharts}

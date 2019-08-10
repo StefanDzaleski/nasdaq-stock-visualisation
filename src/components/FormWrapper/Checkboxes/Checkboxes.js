@@ -1,6 +1,6 @@
 import React from 'react';
 import { Checkbox } from 'antd';
-import './Checkboxes.css';
+import './Checkboxes.scss';
 
 const checkboxes = (props) => {
     return (
