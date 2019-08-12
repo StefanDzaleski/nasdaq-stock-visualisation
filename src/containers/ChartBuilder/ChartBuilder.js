@@ -172,7 +172,7 @@ class ChartBuilder extends Component {
                     {
                         (this.state.company || this.state.companies) && this.state.timeSeries && (this.state.lineOption || this.state.lineOptions) ?
                             <div className="Generate-button-div" key="button-key">
-                                <button className="Generate-button" onClick={this.generateChart}>Generate chart</button>
+                                <div className="Generate-button" onClick={this.generateChart}>Generate chart</div>
                             </div> :
                             null
                     }
@@ -187,7 +187,7 @@ class ChartBuilder extends Component {
                                 />
                             </div>
                             <div className="Reset-button-wrapper">
-                                <button className="Reset-button" onClick={this.resetForm}>Reset form</button>
+                                <div className="Reset-button" onClick={this.resetForm}>Reset form</div>
                             </div>
                         </Aux> :
                         null
