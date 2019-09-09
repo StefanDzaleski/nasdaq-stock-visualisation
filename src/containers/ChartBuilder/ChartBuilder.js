@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import { chartOptions } from '../../components/Chart/ChartOptions';
+import { lineChartOptions, stockChartOptions } from '../../components/Chart/ChartOptions';
 import * as Backend from './../../services/Backend';
 import Aux from '../../hoc/Aux/Aux';
 import Chart from './../../components/Chart/Chart';
 import './ChartBuilder.scss';
 import QueueAnim from 'rc-queue-anim';
 import FormWrapper from '../../components/FormWrapper/FormWrapper';
+import { CompanyLineNumberEnum } from '../../enums/CompanyLineNumber';
 
 const lineOptions = [
     { label: 'Open', value: '1. open' },
     { label: 'High', value: '2. high' },
     { label: 'Low', value: '3. low' },
-    { label: 'Close', value: '4. close' },
-    { label: 'Volume', value: '5. volume' }
+    { label: 'Close', value: '4. close' }
+    // { label: 'Volume', value: '5. volume' },
+    // { label: 'All', value: 'all'}
 ];
 
 class ChartBuilder extends Component {
@@ -32,7 +34,9 @@ class ChartBuilder extends Component {
             interval: null,
             lineOption: null,
             lineOptions: null,
-            generatingChart: false
+            generatingChart: false,
+            stockChart: false,
+            lineChart: false
         }
     }
 
@@ -43,7 +47,14 @@ class ChartBuilder extends Component {
     // }
 
     companyLineNumberHandler = (type) => {
-        this.setState({ [type]: true });
+        if (type === CompanyLineNumberEnum.MultipleCompanies) {
+            this.setState({ 
+                [type]: true,
+                lineChart: true
+            });
+        } else {
+            this.setState({ [type]: true });
+        }
     }
 
     companyChangedHandler = (value) => {
@@ -59,7 +70,6 @@ class ChartBuilder extends Component {
     }
 
     lineOptionsChosen = (values) => {
-        console.log('values', values);
         this.setState({
             lineOptions: values
         });
@@ -75,6 +85,20 @@ class ChartBuilder extends Component {
         this.setState({
             companies: values
         });
+    }
+
+    chartChosenHandler = (type) => {
+        if (type === 'lineChart') {
+            this.setState({
+                lineChart: true,
+                stockChart: false
+            })
+        } else {
+            this.setState({
+                lineChart: false,
+                stockChart: true
+            })
+        }
     }
 
     resetForm = () => {
@@ -96,7 +120,6 @@ class ChartBuilder extends Component {
     }
 
     generateChart = () => {
-        console.log('state', this.state);
         this.setState({
             generatingChart: true
         });
@@ -104,16 +127,37 @@ class ChartBuilder extends Component {
             return;
         }
 
-        if (this.state.singleCompany) {
-            Backend.getSingleCompanyData(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
+        if (this.state.stockChart) {
+            Backend.getStockChartData(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
                 .then(response => {
-                    let newOptions = { ...chartOptions };
+                    let newOptions = { ...stockChartOptions };
+                    // let series = [];
+                    // for (let i = 0; i < response.data.length; i++) {
+                    //     let lineData =
+                    //     {
+                    //         name: 'Test series ' + i,
+                    //         data: response.data[i],
+                    //         tooltip: {
+                    //             valueDecimals: 2
+                    //         }
+                    //     }
+                    //     series.push(lineData);
+                    // }
+                    newOptions.series[0].data = response.data.values;
+                    newOptions.series[1].data = response.data.volume;
+                    this.setState({ chartOptions: newOptions });
+                });
+        }
+        else if (this.state.singleCompany) {
+            Backend.getSingleCompanyDataLocal(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
+                .then(response => {
+                    let newOptions = { ...lineChartOptions };
                     let series = [];
-                    for (let i = 0; i < response.length; i++) {
+                    for (let i = 0; i < response.data.length; i++) {
                         let lineData =
                         {
                             name: 'Test series ' + i,
-                            data: response[i],
+                            data: response.data[i],
                             tooltip: {
                                 valueDecimals: 2
                             }
@@ -124,14 +168,14 @@ class ChartBuilder extends Component {
                     this.setState({ chartOptions: newOptions });
                 });
         } else {
-            Backend.getMultiCompanyData(this.state.companies, this.state.interval, this.state.timeSeries, this.state.lineOption).then(response => {
-                let newOptions = { ...chartOptions };
+            Backend.getMultiCompanyDataLocal(this.state.companies, this.state.interval, this.state.timeSeries, this.state.lineOption).then(response => {
+                let newOptions = { ...lineChartOptions };
                 let series = [];
-                for (let i = 0; i < response.length; i++) {
+                for (let i = 0; i < response.data.length; i++) {
                     let lineData =
                     {
                         name: 'Test series ' + i,
-                        data: response[i],
+                        data: response.data[i],
                         tooltip: {
                             valueDecimals: 2
                         }
@@ -162,6 +206,9 @@ class ChartBuilder extends Component {
                     lineOptionsChosen={this.lineOptionsChosen}
                     multipleCompaniesChanged={this.multipleComapniesChangedHandler}
                     generatingChart={this.state.generatingChart}
+                    lineChart={this.state.lineChart}
+                    stockChart={this.state.stockChart}
+                    chartChosenHandler={this.chartChosenHandler}
                 />
                 <QueueAnim
                     className="fade-out-content"
@@ -170,7 +217,7 @@ class ChartBuilder extends Component {
                     ease={['easeOutQuart', 'easeInOutQuart']}
                     duration={1000}>
                     {
-                        (this.state.company || this.state.companies) && this.state.timeSeries && (this.state.lineOption || this.state.lineOptions) ?
+                        (this.state.company || this.state.companies) && this.state.timeSeries && (this.state.lineOption || this.state.lineOptions || this.state.stockChart) ?
                             <div className="Generate-button-div" key="button-key">
                                 <div className="Generate-button" onClick={this.generateChart}>Generate chart</div>
                             </div> :

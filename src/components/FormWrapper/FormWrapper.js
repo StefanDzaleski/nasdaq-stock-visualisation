@@ -10,6 +10,7 @@ import { CompanyLineNumberEnum } from '../../enums/CompanyLineNumber';
 const formWrapper = (props) => {
 
     const options = (
+        !props.stockChart ?
         props.singleLine || props.multipleCompanies ?
             <RadioButtons
                 lineOptions={props.lineOptions}
@@ -18,6 +19,7 @@ const formWrapper = (props) => {
             <Checkboxes
                 lineOptions={props.lineOptions}
                 lineOptionsChosen={props.lineOptionsChosen} />
+        : null
     )
 
     return (
@@ -32,7 +34,20 @@ const formWrapper = (props) => {
                 firstValueTrue={props.singleCompany}
             />
             {
-                props.singleCompany ?
+               props.singleCompany ?
+               <OptionButtons
+                   showButtons={props.lineChart || props.stockChart}
+                   click={props.chartChosenHandler}
+                   values={
+                       [{ textValue: 'Line Chart', clickValue: 'lineChart' },
+                       { textValue: 'Stock Chart', clickValue: 'stockChart' }]
+                   }
+                   firstValueTrue={props.lineChart}
+               /> :
+               null 
+            }
+            {
+                props.lineChart?
                     <OptionButtons
                         showButtons={props.singleLine || props.multiLine}
                         click={props.companyLineNumber}
@@ -45,7 +60,7 @@ const formWrapper = (props) => {
                     null
             }
             {
-                props.singleLine || props.multiLine || props.multipleCompanies ?
+                props.singleLine || props.multiLine || props.multipleCompanies || props.stockChart?
                     <Aux>
                         {options}
                         <Dropdowns
