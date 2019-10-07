@@ -5,3 +5,11 @@ export const CompanyList = [
     {label: 'Analog Devices, Inc.', value: 'ADI'},
     {label: 'Automatic Data Processing, Inc.', value: 'ADP'}
 ]
+
+export const Currencies = [
+    'EUR',
+    'GBP',
+    'USD',
+    'CHF',
+    'CNY'
+]

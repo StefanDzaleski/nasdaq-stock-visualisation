@@ -24,7 +24,7 @@ const optionButtons = (props) => {
     const placeholder = (
         props.showButtons ?
             <ChosenValue key="secondKey">
-                {props.firstValueTrue ? props.values[0].textValue : props.values[1].textValue}
+                {props.chosenValue ? props.chosenValue : props.firstValueTrue ? props.values[0].textValue : props.values[1].textValue}
             </ChosenValue> :
             null
     );

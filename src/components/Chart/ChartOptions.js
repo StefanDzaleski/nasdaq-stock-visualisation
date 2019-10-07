@@ -1,11 +1,22 @@
 export const lineChartOptions = {
+    chart: {
+        type: 'column'
+    },
+
     rangeSelector: {
         selected: 1
     },
 
     title: {
-        text: 'AAPL Stock Price'
+        text: 'Stock Price Comparison'
     },
+
+    legend: {
+        enabled: true,
+        itemStyle: {
+          fontWeight: '500'
+        }
+      },
 
     series: []
 }
@@ -62,12 +73,12 @@ export const stockChartOptions = {
     series: [{
         type: 'ohlc',
         id: 'aapl-ohlc',
-        name: 'AAPL Stock Price',
+        name: 'Stock Price',
         data: []
     }, {
         type: 'column',
         id: 'aapl-volume',
-        name: 'AAPL Volume',
+        name: 'Volume',
         data: [],
         yAxis: 1
     }],

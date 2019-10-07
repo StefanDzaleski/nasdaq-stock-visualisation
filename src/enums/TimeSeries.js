@@ -5,6 +5,13 @@ export const TimeSeriesEnum = {
     Monthly: 'TIME_SERIES_MONTHLY'
 }
 
+export const CurrencyEnum = {
+    'TIME_SERIES_INTRADAY': 'FX_INTRADAY',
+    'TIME_SERIES_DAILY': 'FX_DAILY',
+    'TIME_SERIES_WEEKLY': 'FX_WEEKLY',
+    'TIME_SERIES_MONTHLY': 'FX_MONTHLY'
+}
+
 export const TimeSeries = [
     {label: 'Intraday', value: TimeSeriesEnum.Intraday},
     {label: 'Daily', value: TimeSeriesEnum.Daily},

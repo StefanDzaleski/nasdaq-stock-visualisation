@@ -6,11 +6,12 @@ import Checkboxes from './Checkboxes/Checkboxes';
 import RadioButtons from './RadioButtons/RadioButtons';
 import Aux from '../../hoc/Aux/Aux';
 import { CompanyLineNumberEnum } from '../../enums/CompanyLineNumber';
+import { ChartType } from '../../enums/ChartType';
 
 const formWrapper = (props) => {
 
     const options = (
-        !props.stockChart ?
+        props.chartType !== ChartType.stockChart && props.chartType !== ChartType.candlestickChart && props.chartType !== ChartType.areaSplineRangeChart ?
         props.singleLine || props.multipleCompanies ?
             <RadioButtons
                 lineOptions={props.lineOptions}
@@ -25,6 +26,17 @@ const formWrapper = (props) => {
     return (
         <div className="Form-wrapper">
             <OptionButtons
+                showButtons={props.stock || props.currency}
+                click={props.dataTypeHandler}
+                values={
+                    [{ textValue: 'Stock data', clickValue: 'stock' },
+                    { textValue: 'Forex data', clickValue: 'currency' }]
+                }
+                firstValueTrue={props.stock}
+            />
+            {
+                props.stock ?
+            <OptionButtons
                 showButtons={props.singleCompany || props.multipleCompanies}
                 click={props.companyLineNumber}
                 values={
@@ -32,22 +44,41 @@ const formWrapper = (props) => {
                     { textValue: 'Multiple Companies', clickValue: CompanyLineNumberEnum.MultipleCompanies }]
                 }
                 firstValueTrue={props.singleCompany}
-            />
+            /> :
+            null
+            }
             {
                props.singleCompany ?
                <OptionButtons
-                   showButtons={props.lineChart || props.stockChart}
+                   showButtons={props.chartType}
                    click={props.chartChosenHandler}
                    values={
-                       [{ textValue: 'Line Chart', clickValue: 'lineChart' },
-                       { textValue: 'Stock Chart', clickValue: 'stockChart' }]
+                       [{ textValue: ChartType.splineChart, clickValue: ChartType.splineChart },
+                       { textValue: ChartType.stockChart, clickValue: ChartType.stockChart },
+                       { textValue: ChartType.columnChart, clickValue: ChartType.columnChart },
+                       { textValue: ChartType.areaSplineRangeChart, clickValue: ChartType.areaSplineRangeChart },
+                       { textValue: ChartType.candlestickChart, clickValue: ChartType.candlestickChart }
+                    ]
                    }
-                   firstValueTrue={props.lineChart}
+                   chosenValue={props.chartType}
                /> :
                null 
             }
             {
-                props.lineChart?
+               props.multipleCompanies ?
+               <OptionButtons
+                   showButtons={props.chartType}
+                   click={props.chartChosenHandler}
+                   values={
+                       [{ textValue: ChartType.splineChart, clickValue: ChartType.splineChart },
+                       { textValue: ChartType.columnChart, clickValue: ChartType.columnChart }]
+                   }
+                   chosenValue={props.chartType}
+               /> :
+               null 
+            }
+            {
+                props.chartType === ChartType.splineChart && props.singleCompany ?
                     <OptionButtons
                         showButtons={props.singleLine || props.multiLine}
                         click={props.companyLineNumber}
@@ -60,7 +91,20 @@ const formWrapper = (props) => {
                     null
             }
             {
-                props.singleLine || props.multiLine || props.multipleCompanies || props.stockChart?
+                props.chartType === ChartType.areaSplineRangeChart ?
+                    <OptionButtons
+                        showButtons={props.areaSplineOptions}
+                        click={props.areaSplineOptionsHandler}
+                        values={
+                            [{ textValue: 'High vs Low', clickValue: 'High vs Low' },
+                            { textValue: 'Open vs Close', clickValue:  'Open vs Close'}]
+                        }
+                        chosenValue={props.areaSplineOptions}
+                    /> :
+                    null
+            }
+            {
+                (props.singleLine || props.multiLine) || (props.chartType && props.chartType !== ChartType.splineChart && props.chartType !== ChartType.areaSplineRangeChart) || props.areaSplineOptions || (props.multipleCompanies && props.chartType) || (props.currency)?
                     <Aux>
                         {options}
                         <Dropdowns
@@ -70,6 +114,10 @@ const formWrapper = (props) => {
                             timeSeries={props.timeSeries}
                             multipleCompanies={props.multipleCompanies}
                             multipleCompaniesChanged={props.multipleCompaniesChanged}
+                            stock={props.stock}
+                            currency={props.currency}
+                            fromCurrencyChanged={props.fromCurrencyChanged}
+                            toCurrencyChanged={props.toCurrencyChanged}
                         />
                     </Aux> :
                     null
