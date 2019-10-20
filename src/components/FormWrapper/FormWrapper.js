@@ -11,7 +11,7 @@ import { ChartType } from '../../enums/ChartType';
 const formWrapper = (props) => {
 
     const options = (
-        props.chartType !== ChartType.stockChart && props.chartType !== ChartType.candlestickChart && props.chartType !== ChartType.areaSplineRangeChart ?
+        props.chartType !== ChartType.stockChart && props.chartType !== ChartType.candlestickChart && props.chartType !== ChartType.areaSplineRangeChart && props.stock?
         props.singleLine || props.multipleCompanies ?
             <RadioButtons
                 lineOptions={props.lineOptions}

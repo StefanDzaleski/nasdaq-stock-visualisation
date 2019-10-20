@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { lineChartOptions, stockChartOptions } from '../../components/Chart/ChartOptions';
+import { lineChartOptions, stockChartOptions, currencyChartOptions } from '../../components/Chart/ChartOptions';
 import * as Backend from './../../services/Backend';
 import Aux from '../../hoc/Aux/Aux';
 import Chart from './../../components/Chart/Chart';
@@ -8,7 +8,7 @@ import QueueAnim from 'rc-queue-anim';
 import FormWrapper from '../../components/FormWrapper/FormWrapper';
 import { CompanyLineNumberEnum } from '../../enums/CompanyLineNumber';
 import { ChartType, ChartTypeMap } from '../../enums/ChartType';
-import { CurrencyEnum } from '../../enums/TimeSeries';
+import { CurrencyEnum, TimeSeriesEnum } from '../../enums/TimeSeries';
 
 const lineOptions = [
     { label: 'Open', value: '1. open' },
@@ -54,7 +54,7 @@ class ChartBuilder extends Component {
 
     companyLineNumberHandler = (type) => {
         if (type === CompanyLineNumberEnum.MultipleCompanies) {
-            this.setState({ 
+            this.setState({
                 [type]: true,
                 lineChart: true
             });
@@ -76,7 +76,18 @@ class ChartBuilder extends Component {
     }
 
     timeSeriesChangedHandler = (value) => {
-        this.setState({ timeSeries: value });
+        if (value === TimeSeriesEnum.Intraday) {
+            if (!this.state.interval) {
+                this.setState({
+                    timeSeries: value,
+                    interval: '1min'
+                });
+            } else {
+                this.setState({ timeSeries: value });
+            }
+        } else {
+            this.setState({ timeSeries: value });
+        }
     }
 
     intervalChangedHandler = (value) => {
@@ -150,12 +161,13 @@ class ChartBuilder extends Component {
             const timeSeriesNew = CurrencyEnum[this.state.timeSeries];
             Backend.getCurrencyData(this.state.fromCurrency, this.state.toCurrency, timeSeriesNew, this.state.interval)
                 .then(response => {
-                    let newOptions = { ...lineChartOptions };
+                    let newOptions = { ...currencyChartOptions };
                     let series = [];
                     for (let i = 0; i < response.data.length; i++) {
                         let lineData =
                         {
-                            name: 'test',
+                            type: 'area',
+                            name: this.state.fromCurrency + ' to ' + this.state.toCurrency,
                             data: response.data[i],
                             tooltip: {
                                 valueDecimals: 2
@@ -164,35 +176,55 @@ class ChartBuilder extends Component {
                         series.push(lineData);
                     }
                     newOptions.series = series;
+                    newOptions.title.text = this.state.fromCurrency + ' to ' + this.state.toCurrency + ' exchange rate over time'
                     // newOptions.chart.type = ChartTypeMap.get(this.state.chartType).type;
                     this.setState({ chartOptions: newOptions });
                 });
         } else {
-        if (this.state.chartType === ChartType.stockChart || this.state.chartType === ChartType.candlestickChart) {
-            Backend.getStockChartData(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
-                .then(response => {
-                    let newOptions = { ...stockChartOptions };
-                    newOptions.series[0].data = response.data.values;
-                    newOptions.series[1].data = response.data.volume;
-                    stockChartOptions.series[0].type = ChartTypeMap.get(this.state.chartType).type;
-                    this.setState({ chartOptions: newOptions });
-                });
-        }
-        else if (this.state.singleCompany) {
-            let values;
-            if (this.state.chartType === ChartType.areaSplineRangeChart) {
-                this.state.areaSplineOptions === 'High vs Low' ? values = ['2. high', '3. low'] : values = ['1. open', '4. close'];
-            } else {
-                this.state.lineOption ? values = this.state.lineOption : values = this.state.lineOptions;
+            if (this.state.chartType === ChartType.stockChart || this.state.chartType === ChartType.candlestickChart) {
+                Backend.getStockChartData(this.state.company, this.state.interval, this.state.timeSeries, this.state.lineOption ? this.state.lineOption : this.state.lineOptions)
+                    .then(response => {
+                        let newOptions = { ...stockChartOptions };
+                        newOptions.series[0].data = response.data.values;
+                        newOptions.series[1].data = response.data.volume;
+                        stockChartOptions.series[0].type = ChartTypeMap.get(this.state.chartType).type;
+                        this.setState({ chartOptions: newOptions });
+                    });
             }
-            Backend.getSingleCompanyDataLocal(this.state.company, this.state.interval, this.state.timeSeries, values, this.state.chartType === ChartType.areaSplineRangeChart)
-                .then(response => {
+            else if (this.state.singleCompany) {
+                let values;
+                if (this.state.chartType === ChartType.areaSplineRangeChart) {
+                    this.state.areaSplineOptions === 'High vs Low' ? values = ['2. high', '3. low'] : values = ['1. open', '4. close'];
+                } else {
+                    this.state.lineOption ? values = this.state.lineOption : values = this.state.lineOptions;
+                }
+                Backend.getSingleCompanyDataLocal(this.state.company, this.state.interval, this.state.timeSeries, values, this.state.chartType === ChartType.areaSplineRangeChart)
+                    .then(response => {
+                        let newOptions = { ...lineChartOptions };
+                        let series = [];
+                        for (let i = 0; i < response.data.length; i++) {
+                            let lineData =
+                            {
+                                name: this.state.lineOptions ? this.state.lineOptions[i] : this.state.lineOption,
+                                data: response.data[i],
+                                tooltip: {
+                                    valueDecimals: 2
+                                }
+                            }
+                            series.push(lineData);
+                        }
+                        newOptions.series = series;
+                        newOptions.chart.type = ChartTypeMap.get(this.state.chartType).type;
+                        this.setState({ chartOptions: newOptions });
+                    });
+            } else {
+                Backend.getMultiCompanyDataLocal(this.state.companies, this.state.interval, this.state.timeSeries, this.state.lineOption).then(response => {
                     let newOptions = { ...lineChartOptions };
                     let series = [];
                     for (let i = 0; i < response.data.length; i++) {
                         let lineData =
                         {
-                            name: lineOptions ? this.state.lineOptions[i] : this.state.lineOption,
+                            name: this.state.companies[i],
                             data: response.data[i],
                             tooltip: {
                                 valueDecimals: 2
@@ -203,28 +235,9 @@ class ChartBuilder extends Component {
                     newOptions.series = series;
                     newOptions.chart.type = ChartTypeMap.get(this.state.chartType).type;
                     this.setState({ chartOptions: newOptions });
-                });
-        } else {
-            Backend.getMultiCompanyDataLocal(this.state.companies, this.state.interval, this.state.timeSeries, this.state.lineOption).then(response => {
-                let newOptions = { ...lineChartOptions };
-                let series = [];
-                for (let i = 0; i < response.data.length; i++) {
-                    let lineData =
-                    {
-                        name: this.state.companies[i],
-                        data: response.data[i],
-                        tooltip: {
-                            valueDecimals: 2
-                        }
-                    }
-                    series.push(lineData);
-                }
-                newOptions.series = series;
-                newOptions.chart.type = ChartTypeMap.get(this.state.chartType).type;
-                this.setState({ chartOptions: newOptions });
-            })
+                })
+            }
         }
-    }
     }
 
     render() {
